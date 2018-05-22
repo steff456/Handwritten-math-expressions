@@ -235,9 +235,9 @@ if __name__ == '__main__':
             from glob import glob
             if sys.argv[1][-1] != os.sep: sys.argv[1] += os.sep
             FILES = glob(sys.argv[1]+os.sep+"*.inkml")
-        
+
         folder_name = sys.argv[1].split(os.sep)[-2]
-        
+
         save_path = "data_png_" + folder_name
         if not os.path.isdir(save_path):
             os.mkdir(save_path)
@@ -268,7 +268,7 @@ if __name__ == '__main__':
 
             if padding > 0:
                 im = np.lib.pad(im, (padding, padding), 'constant', constant_values=255)
-            
+
             im = ndimage.gaussian_filter(im, sigma=(.5, .5), order=0)
 
             imsave(save_path + os.sep + img_basename + '.png',im)
