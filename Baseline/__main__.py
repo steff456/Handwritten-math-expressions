@@ -1,7 +1,22 @@
+import argparse
+
 from charge import get_images
 from hog import calculate_hog
 from charge import save_var
 
+parser = argparse.ArgumentParser(
+    description='Baseline HOG')
+
+parser.add_argument('--train', type=str, default='./png',
+                    help='directory of the original inkml files')
+parser.add_argument('--index-txt', type=str, default='./training_index.txt',
+                    help='file with annotations')
+parser.add_argument('--num-im', type=int, default=5,
+                    help='number of new images')
+parser.add_argument('--out-dir', type=str, default='./generatedSymbols',
+                    help='directory of the generated inkml files')
+
+args = parser.parse_args()
 # Charges the files to the workspace
 train_images, test_images = get_images()
 
