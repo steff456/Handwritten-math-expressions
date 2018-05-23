@@ -40,9 +40,9 @@ def new_coordinates(route):
             rand_y = random.random()/600.0
             # rand_y = 0.01
             ny = y + rand_y
-            print(str(x) + ';' + str(nx))
-            print(str(y) + ';' + str(ny))
-            print('---')
+            # print(str(x) + ';' + str(nx))
+            # print(str(y) + ';' + str(ny))
+            # print('---')
             strx = str(nx)
             stry = str(ny)
             if first:
@@ -94,11 +94,12 @@ def generate(or_dict, num_im, out_directory):
     n_dict = or_dict
     count = 0
     for key in or_dict.keys():
+        print(key)
         in_count = 0
         while(len(n_dict[key]) < num_im):
             i = in_count % len(or_dict[key])
             inkml_act = or_dict[key][i]
-            print(inkml_act)
+            # print(inkml_act)
             n_coord = new_coordinates(inkml_act)
             name = writeInkML(inkml_act, n_coord, out_directory, count)
             writeLabels(out_directory, key, name, count)
