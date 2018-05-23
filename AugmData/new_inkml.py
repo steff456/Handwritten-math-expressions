@@ -21,6 +21,8 @@ def new_coordinates(route):
     strokes = []
     coord_strokes = {}
     # check all strokes
+    # rand_x = random.random()*3
+    # rand_y = random.random()*3
     for i in range(0, len(b)):
         strokes.append(b[i].text.strip())
         coord = strokes[-1].split(',')
@@ -32,11 +34,11 @@ def new_coordinates(route):
             pair = pair.split(' ')
             x = float(pair[0])
             y = float(pair[1])
-            rand_x = random.random()/2.0
-            # rand_x = 0
+            rand_x = random.random()/600.0
+            # rand_x = 0.01
             nx = x + rand_x
-            rand_y = random.random()/2.0
-            # rand_y = 0
+            rand_y = random.random()/600.0
+            # rand_y = 0.01
             ny = y + rand_y
             print(str(x) + ';' + str(nx))
             print(str(y) + ';' + str(ny))
