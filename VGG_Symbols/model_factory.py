@@ -46,6 +46,7 @@ class VGG16(nn.Module):
         x = self.base_vgg(x)
         x = x.view(x.size(0), -1)
         x = self.classifier(x)
+        return x
 
 
 def vgg16(*args, num_classes=1000, **kwargs):
