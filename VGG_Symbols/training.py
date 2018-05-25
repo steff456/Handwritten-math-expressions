@@ -167,7 +167,7 @@ if args.val:
     if args.distributed:
         val_sampler = DistributedSampler(valset)
 
-    val_loader = DataLoader(refer_val, batch_size=args.batch_size,
+    val_loader = DataLoader(valset, batch_size=args.batch_size,
                             pin_memory=args.pin_memory,
                             num_workers=args.workers,
                             sampler=val_sampler)
