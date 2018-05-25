@@ -28,25 +28,53 @@ REGEX = re.compile(MODULE_REGEX)
 
 
 class VGG16(nn.Module):
-    def __init__(self, *args, num_classes=1000, **kwargs):
-        super(VGG16, self).__init__()
-        self.base_vgg = vgg16_builder(
-            *args, num_classes=1000, **kwargs).features
-        self.classifier = nn.Sequential(
-            nn.Linear(512, 128),
-            nn.ReLU(True),
-            nn.Dropout(),
-            nn.Linear(128, 128),
-            nn.ReLU(True),
-            nn.Dropout(),
-            nn.Linear(128, num_classes)
-        )
+    def __init__(self):
+        super(Net, self).__init__()
+        self.conv1 = nn.Conv2d(3, 64, 3)
+        self.conv2 = nn.Conv2d(64, 64, 3)
+        self.conv3 = nn.Conv2d(64, 128, 3)
+        self.conv4 = nn.Conv2d(128, 128, 3)
+        self.conv5 = nn.Conv2d(128, 256, 3)
+        self.conv6 = nn.Conv2d(256, 256, 3)
+        self.conv7 = nn.Conv2d(256, 256, 3)
+        self.conv8 = nn.Conv2d(256, 512, 3)
+        self.conv9 = nn.Conv2d(512, 512, 3)
+        self.conv10 = nn.Conv2d(512, 512, 3)
+        self.fc1 = nn.Linear(512*5*5, 25)
 
     def forward(self, x):
-        x = self.base_vgg(x)
-        x = x.view(x.size(0), -1)
-        x = self.classifier(x)
-        return x
+        x = F.selu(self.conv1(x))
+        x = F.selu(self.conv2(x))
+        y = x
+        x = F.max_pool2d(x,2)
+        x = F.selu(self.conv3(x))
+        x = F.selu(self.conv4(x))
+        z = x
+        x = F.max_pool2d(x,2)
+        x = F.selu(self.conv5(x))
+        x = F.selu(self.conv6(x))
+        x = F.selu(self.conv7(x))
+        w = x
+        x = F.max_pool2d(x,2)
+        x = F.selu(self.conv8(x))
+        x = F.selu(self.conv9(x))
+        x = F.selu(self.conv10(x))
+        x = F.upsample(x, size=(y.size(-2), y.size(-1)), mode='bilinear')
+        z = F.upsample(z, size=(y.size(-2), y.size(-1)), mode='bilinear')
+        w = F.upsample(w, size=(y.size(-2), y.size(-1)), mode='bilinear')
+        x = torch.cat([x,y,z,w], dim=1)
+        x = F.selu(self.convL(x))
+        x = x.view(-1, 512*5*5)
+        x = self.fc1(x)
+        return F.log_softmax(x, dim=1)
+
+    def load_state_dict(self, new_state):
+        state = self.state_dict()
+        for layer in state:
+            if layer in new_state:
+                if state[layer].size() == new_state[layer].size():
+                    state[layer] = new_state[layer]
+        super().load_state_dict(state)
 
 
 def vgg16(*args, num_classes=1000, **kwargs):
