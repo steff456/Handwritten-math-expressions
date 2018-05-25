@@ -200,7 +200,8 @@ if args.visdom is not None and args.rank == 0:
 
     print('Initializing Visdom frontend at: {0}:{1}'.format(
           args.visdom, port))
-    vis = VisdomWrapper(server=visdom_url.geturl(), port=port, env=args.env)
+    vis = VisdomWrapper(server=visdom_url.geturl(), port=port, env=args.env,
+                        use_incoming_socket=False)
 
     vis.init_line_plot('train_plt', xlabel='Iteration', ylabel='Loss',
                        title='Current Model Loss Value', legend=['Loss'])
@@ -252,7 +253,7 @@ def train(epoch):
             cur_iter = batch_idx + (epoch - 1) * len(train_loader)
             vis.plot_line('train_plt',
                           X=torch.ones((1,)).cpu() * cur_iter,
-                          Y=loss.data.cpu(),
+                          Y=loss.item().cpu(),
                           update='append')
 
         if batch_idx % args.backup_iters == 0:
