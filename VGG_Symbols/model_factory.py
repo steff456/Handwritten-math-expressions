@@ -42,7 +42,9 @@ def create_model(model_name, num_classes=1000, pretrained=False, **kwargs):
             pretrained_state = model_zoo.load_url(URL)
             for layer_name in pretrained_state:
                 if layer_name in state_dict:
-                    state_dict[layer_name] = pretrained_state[layer_name]
+                    if (state_dict[layer_name].size() ==
+                            pretrained_state[layer_name].size()):
+                        state_dict[layer_name] = pretrained_state[layer_name]
             model.load_state_dict(state_dict)
     else:
         assert False, "Unknown model architecture (%s)" % model_name
