@@ -65,7 +65,6 @@ class MathDataset(data.Dataset):
             parts = self.dataset_dict[cat]
             for part in parts:
                 imgs = parts[part][:num_images[part]]
-                print(cat, part, len(imgs))
                 self.dataset += list(zip(imgs, [cat] * len(imgs)))
         self.labels = torch.load(self.labels_file)
 
