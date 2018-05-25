@@ -49,10 +49,6 @@ parser.add_argument('--save-folder', default='weights/',
                     help='location to save checkpoint models')
 parser.add_argument('--snapshot', default='weights/texture_weights.pth',
                     help='path to weight snapshot file')
-parser.add_argument('--predictions', default='predictions.txt',
-                    help='file location to write predictions on')
-parser.add_argument('--num-workers', default=2, type=int,
-                    help='number of workers used in dataloading')
 parser.add_argument('--split', default='train', type=str,
                     help='name of the dataset split used to train')
 parser.add_argument('--val', default='test', type=str,
