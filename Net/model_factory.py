@@ -43,6 +43,7 @@ class VGG16(nn.Module):
         self.conv10 = nn.Conv2d(512, 512, 3)
         self.conv11 = nn.Conv2d(512, 512, 3)
         self.conv12 = nn.Conv2d(512, 512, 3)
+        self.conv13 = nn.Conv2d(512, 512, 3)
         self.fc1 = nn.Linear(346112, num_classes)
 
     def forward(self, x):
@@ -69,6 +70,7 @@ class VGG16(nn.Module):
         # x = F.selu(self.convL(x))
         x = F.selu(self.conv11(x))
         x = F.selu(self.conv12(x))
+        x = F.selu(self.conv13(x))
         x = x.view(x.size(0), -1)
         x = self.fc1(x)
         return F.log_softmax(x, dim=1)
