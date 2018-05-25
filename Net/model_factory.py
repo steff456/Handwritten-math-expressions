@@ -27,24 +27,28 @@ MODULE_REGEX = r'([a-zA-Z]+)((_.*)|(\d+))'
 REGEX = re.compile(MODULE_REGEX)
 
 
+class VGG16(nn.Module):
+    def __init__(self, *args, num_classes=1000, **kwargs):
+        self.base_vgg = vgg16_builder(
+            *args, num_classes=1000, **kwargs).features
+        self.classifier = nn.Sequential(
+            nn.Linear(102400, 1),
+            nn.ReLU(True),
+            nn.Dropout(),
+            nn.Linear(4096, 4096),
+            nn.ReLU(True),
+            nn.Dropout(),
+            nn.Linear(4096, num_classes)
+        )
+
+    def forward(self, x):
+        x = self.base_vgg(x)
+        x = x.view(x.size(0), -1)
+        x = self.classifier(x)
+
+
 def vgg16(*args, num_classes=1000, **kwargs):
-    pretrained = False
-    if 'pretrained' in kwargs:
-        pretrained = kwargs['pretrained']
-        kwargs['pretrained'] = False
-    base_vgg = vgg16_builder(*args, **kwargs)
-    classifier = nn.Sequential(
-        nn.Linear(102400, 4096),
-        nn.ReLU(True),
-        nn.Dropout(),
-        nn.Linear(4096, 4096),
-        nn.ReLU(True),
-        nn.Dropout(),
-        nn.Linear(4096, num_classes)
-    )
-    base_vgg = list(base_vgg.children())[:-1]
-    base_vgg += [classifier]
-    model = nn.Sequential(*base_vgg)
+    model = VGG16(*args, num_classes=num_classes, **kwargs)
     return model
 
 
