@@ -242,6 +242,8 @@ def train(epoch):
             labels = labels.cuda()
         optimizer.zero_grad()
         outputs = net(inputs)
+        print('**********')
+        print(outputs)
         loss = criterion(outputs, labels)
         loss.backward()
         optimizer.step()
