@@ -127,7 +127,7 @@ class MathDataset(data.Dataset):
         target = self.labels[label]
         image = np.array(image)
         if image.ndim == 2:
-            image = np.stack([image] * 3, dim=-1)
+            image = np.stack([image] * 3, axis=-1)
         image = Image.fromarray(image)
         if self.transform is not None:
             image = self.transform(image)
