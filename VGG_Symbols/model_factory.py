@@ -29,6 +29,7 @@ REGEX = re.compile(MODULE_REGEX)
 
 class VGG16(nn.Module):
     def __init__(self, *args, num_classes=1000, **kwargs):
+        super(VGG16, self).__init__()
         self.base_vgg = vgg16_builder(
             *args, num_classes=1000, **kwargs).features
         self.classifier = nn.Sequential(
