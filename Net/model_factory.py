@@ -32,7 +32,7 @@ def vgg16(*args, num_classes=1000, **kwargs):
     if 'pretrained' in kwargs:
         pretrained = kwargs['pretrained']
         kwargs['pretrained'] = False
-    base_vgg = vgg_builder(*args, **kwargs)
+    base_vgg = vgg16_builder(*args, **kwargs)
     classifier = nn.Sequential(
         nn.Linear(512 * 1, 128),
         nn.ReLU(True),
