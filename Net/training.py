@@ -185,7 +185,7 @@ if osp.exists(args.snapshot):
 if args.distributed:
     if args.cuda:
         net = net.cuda()
-    net = parallel.DistributedDataParallel(
+    net = nn.parallel.DistributedDataParallel(
         net, device_ids=[args.local_rank], output_device=args.local_rank)
 
 if args.cuda:
