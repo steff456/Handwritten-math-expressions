@@ -7,6 +7,7 @@ import torch.nn as nn
 import re
 import math
 import torch.nn as nn
+import torch.nn.functional as F
 from dpn_model import dpn68, dpn68b, dpn92, dpn98, dpn131, dpn107
 import torchvision.models.resnet as resnet
 from torchvision.models.resnet import (
