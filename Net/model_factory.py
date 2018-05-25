@@ -28,7 +28,7 @@ REGEX = re.compile(MODULE_REGEX)
 
 
 class VGG16(nn.Module):
-    def __init__(self, num_classes=1000):
+    def __init__(self, *args, num_classes=1000, pretrained=None, **kwargs):
         super(Net, self).__init__()
         self.conv1 = nn.Conv2d(3, 64, 3)
         self.conv2 = nn.Conv2d(64, 64, 3)
@@ -45,24 +45,24 @@ class VGG16(nn.Module):
     def forward(self, x):
         x = F.selu(self.conv1(x))
         x = F.selu(self.conv2(x))
-        y = x
-        x = F.max_pool2d(x,2)
+        # y = x
+        # x = F.max_pool2d(x, 2)
         x = F.selu(self.conv3(x))
         x = F.selu(self.conv4(x))
-        z = x
-        x = F.max_pool2d(x,2)
+        # z = x
+        # x = F.max_pool2d(x, 2)
         x = F.selu(self.conv5(x))
         x = F.selu(self.conv6(x))
         x = F.selu(self.conv7(x))
-        w = x
-        x = F.max_pool2d(x,2)
+        # w = x
+        # x = F.max_pool2d(x, 2)
         x = F.selu(self.conv8(x))
         x = F.selu(self.conv9(x))
         x = F.selu(self.conv10(x))
-        x = F.upsample(x, size=(y.size(-2), y.size(-1)), mode='bilinear')
-        z = F.upsample(z, size=(y.size(-2), y.size(-1)), mode='bilinear')
-        w = F.upsample(w, size=(y.size(-2), y.size(-1)), mode='bilinear')
-        x = torch.cat([x,y,z,w], dim=1)
+        # x = F.upsample(x, size=(y.size(-2), y.size(-1)), mode='bilinear')
+        # z = F.upsample(z, size=(y.size(-2), y.size(-1)), mode='bilinear')
+        # w = F.upsample(w, size=(y.size(-2), y.size(-1)), mode='bilinear')
+        # x = torch.cat([x, y, z, w], dim=1)
         x = F.selu(self.convL(x))
         x = x.view(-1, 512*5*5)
         x = self.fc1(x)
