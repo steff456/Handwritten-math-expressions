@@ -243,7 +243,7 @@ def train(epoch):
         optimizer.zero_grad()
         outputs = net(inputs)
         print('**********')
-        print(outputs)
+        print(outputs.size())
         loss = criterion(outputs, labels)
         loss.backward()
         optimizer.step()
