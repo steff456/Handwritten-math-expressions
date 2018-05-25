@@ -28,7 +28,7 @@ REGEX = re.compile(MODULE_REGEX)
 
 
 class VGG16(nn.Module):
-    def __init__(self):
+    def __init__(self, num_classes=1000):
         super(Net, self).__init__()
         self.conv1 = nn.Conv2d(3, 64, 3)
         self.conv2 = nn.Conv2d(64, 64, 3)
@@ -40,7 +40,7 @@ class VGG16(nn.Module):
         self.conv8 = nn.Conv2d(256, 512, 3)
         self.conv9 = nn.Conv2d(512, 512, 3)
         self.conv10 = nn.Conv2d(512, 512, 3)
-        self.fc1 = nn.Linear(512*5*5, 25)
+        self.fc1 = nn.Linear(512*5*5, num_classes)
 
     def forward(self, x):
         x = F.selu(self.conv1(x))
@@ -68,13 +68,13 @@ class VGG16(nn.Module):
         x = self.fc1(x)
         return F.log_softmax(x, dim=1)
 
-    def load_state_dict(self, new_state):
-        state = self.state_dict()
-        for layer in state:
-            if layer in new_state:
-                if state[layer].size() == new_state[layer].size():
-                    state[layer] = new_state[layer]
-        super().load_state_dict(state)
+    # def load_state_dict(self, new_state):
+    #     state = self.state_dict()
+    #     for layer in state:
+    #         if layer in new_state:
+    #             if state[layer].size() == new_state[layer].size():
+    #                 state[layer] = new_state[layer]
+    #     super().load_state_dict(state)
 
 
 def vgg16(*args, num_classes=1000, **kwargs):
