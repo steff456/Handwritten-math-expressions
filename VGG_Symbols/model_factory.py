@@ -34,13 +34,13 @@ def vgg16(*args, num_classes=1000, **kwargs):
         kwargs['pretrained'] = False
     base_vgg = vgg16_builder(*args, **kwargs)
     classifier = nn.Sequential(
-        nn.Linear(512 * 1, 128),
+        nn.Linear(102400, 4096),
         nn.ReLU(True),
         nn.Dropout(),
-        nn.Linear(128, 128),
+        nn.Linear(4096, 4096),
         nn.ReLU(True),
         nn.Dropout(),
-        nn.Linear(128, num_classes)
+        nn.Linear(4096, num_classes)
     )
     base_vgg = list(base_vgg.children())[:-1]
     base_vgg += [classifier]
