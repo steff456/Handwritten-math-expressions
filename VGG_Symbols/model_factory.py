@@ -16,7 +16,7 @@ from torchvision.models.densenet import (
 import torchvision.models.inception as inception
 from torchvision.models.inception import inception_v3
 import torchvision.models.vgg as vgg
-from torchvision.models.vgg import vgg16
+from torchvision.models.vgg import vgg16 as vgg16_builder
 import torchvision.transforms as transforms
 import torch.utils.model_zoo as model_zoo
 from PIL import Image
@@ -25,6 +25,12 @@ VGG16_URL = 'https://download.pytorch.org/models/vgg16-397923af.pth'
 MODULE_REGEX = r'([a-zA-Z]+)((_.*)|(\d+))'
 REGEX = re.compile(MODULE_REGEX)
 
+def vgg16(*args, **kwargs):
+    pretrained = False
+    if 'pretrained' in kwargs:
+        pretrained = kwargs['pretrained']
+        kwargs['pretrained'] = False
+    base_vgg = vgg(*args, **kwargs)
 
 def create_model(model_name, num_classes=1000, pretrained=False, **kwargs):
     if model_name in globals():

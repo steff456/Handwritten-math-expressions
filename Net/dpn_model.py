@@ -368,7 +368,7 @@ class DPN(nn.Module):
                 # img_size//32 - 6 size patch
                 out = adaptive_avgmax_pool2d(out, pool_type='avgmax')
             else:
-                x = adaptive_avgmax_pool2d(x, pool_type='avg')
+                # x = adaptive_avgmax_pool2d(x, pool_type='avg')
                 out = self.classifier(x)
             out = out.view(out.size(0), -1)
         return out
