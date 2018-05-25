@@ -40,6 +40,7 @@ python -u -m torch.distributed.launch --nproc_per_node=2 training.py --*args
 --world-size 2 --dist-backend nccl
 """
 
+
 parser = argparse.ArgumentParser(
     description='Mathematical symbols Net training routine')
 

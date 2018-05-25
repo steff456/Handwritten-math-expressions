@@ -32,6 +32,7 @@ from adaptive_avgmax_pool import adaptive_avgmax_pool2d
 __all__ = ['DPN', 'dpn68', 'dpn68b', 'dpn92', 'dpn98', 'dpn131', 'dpn107']
 
 
+
 # If anyone able to provide direct link hosting,
 # more than happy to fill these out.. -rwightman
 model_urls = {

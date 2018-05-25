@@ -18,7 +18,6 @@ from PIL import Image
 
 VGG16_URL = 'https://download.pytorch.org/models/vgg16-397923af.pth'
 
-
 # def vgg16(*args, **kwargs):
 #     pretrained = False
 #     if 'pretrained' in kwargs:

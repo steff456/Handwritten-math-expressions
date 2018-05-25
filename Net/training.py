@@ -20,9 +20,10 @@ import torch.optim as optim
 import torch.nn.functional as F
 import torch.distributed as dist
 from torch.autograd import Variable
-from torchvision.transforms import ToTensor, Normalize
+from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data.distributed import DistributedSampler
+from torchvision.transforms import ToTensor, Normalize, Compose
 
 # Local imports
 from utils import AverageMeter
@@ -38,6 +39,7 @@ from PIL import Image
 python -u -m torch.distributed.launch --nproc_per_node=2 training.py --*args
 --world-size 2 --dist-backend nccl
 """
+
 
 parser = argparse.ArgumentParser(
     description='Mathematical symbols Net training routine')
@@ -188,7 +190,7 @@ if args.distributed:
 if args.cuda:
     net = net.cuda()
 
-if args.visdom is not None:
+if args.visdom is not None and args.rank == 0:
     visdom_url = urlparse(args.visdom)
 
     port = 80
@@ -245,7 +247,7 @@ def train(epoch):
         total_loss.update(loss.item(), inputs.size(0))
         epoch_loss_stats.update(loss.item(), inputs.size(0))
 
-        if args.visdom is not None:
+        if args.visdom is not None and args.rank == 0:
             cur_iter = batch_idx + (epoch - 1) * len(train_loader)
             vis.plot_line('train_plt',
                           X=torch.ones((1,)).cpu() * cur_iter,
@@ -278,7 +280,7 @@ def train(epoch):
 
     epoch_total_loss = epoch_loss_stats.avg
 
-    if args.visdom is not None:
+    if args.visdom is not None and args.rank == 0:
         vis.plot_line('train_epoch_plt',
                       X=torch.ones((1, )).cpu() * epoch,
                       Y=torch.ones((1, )).cpu() * epoch_total_loss,
@@ -323,14 +325,14 @@ if __name__ == '__main__':
             train_loss = train(epoch)
             val_loss, train_acc = val(epoch, train_loader)
             val_acc = train_acc
-            if args.visdom is not None:
+            if args.visdom is not None and args.rank == 0:
                 vis.plot_line('train_acc_plt',
                               X=torch.ones((1,)).cpu() * epoch,
                               Y=torch.ones((1,)).cpu() * train_acc,
                               update='append')
             if args.val is not None:
                 val_loss, val_acc = val(epoch, val_loader)
-                if args.visdom is not None:
+                if args.visdom is not None and args.rank == 0:
                     vis.plot_line('val_acc_plt',
                                   X=torch.ones((1,)).cpu() * epoch,
                                   Y=torch.ones((1,)).cpu() * val_acc,

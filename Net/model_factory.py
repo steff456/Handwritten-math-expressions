@@ -5,7 +5,7 @@ from __future__ import print_function
 import torch.nn as nn
 
 import math
-from .dpn_model import dpn68, dpn68b, dpn92, dpn98, dpn131, dpn107
+from dpn_model import dpn68, dpn68b, dpn92, dpn98, dpn131, dpn107
 from torchvision.models.resnet import (
     resnet18, resnet34, resnet50, resnet101, resnet152)
 from torchvision.models.densenet import (
@@ -17,7 +17,6 @@ import torch.utils.model_zoo as model_zoo
 from PIL import Image
 
 VGG16_URL = 'https://download.pytorch.org/models/vgg16-397923af.pth'
-
 
 # def vgg16(*args, **kwargs):
 #     pretrained = False
