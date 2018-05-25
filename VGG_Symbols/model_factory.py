@@ -33,13 +33,13 @@ class VGG16(nn.Module):
         self.base_vgg = vgg16_builder(
             *args, num_classes=1000, **kwargs).features
         self.classifier = nn.Sequential(
-            nn.Linear(102400, 1),
+            nn.Linear(512, 128),
             nn.ReLU(True),
             nn.Dropout(),
-            nn.Linear(4096, 4096),
+            nn.Linear(128, 128),
             nn.ReLU(True),
             nn.Dropout(),
-            nn.Linear(4096, num_classes)
+            nn.Linear(128, num_classes)
         )
 
     def forward(self, x):
