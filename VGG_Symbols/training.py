@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Texture Net PyTorch implementation.
+Handwritten Net PyTorch implementation.
 """
 
 # Standard lib imports
@@ -18,17 +18,26 @@ import torchvision
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
+import torch.distributed as dist
 from torch.autograd import Variable
-import torchvision.transforms as transforms
+from torchvision.transforms import ToTensor, Normalize
 from torch.optim.lr_scheduler import ReduceLROnPlateau
+from torch.utils.data.distributed import DistributedSampler
 
 # Local imports
 from utils import AverageMeter
+from math_dataset import MathDataset
+from model_factory import create_model
 from utils.misc_utils import VisdomWrapper
 
 # Other imports
 from tqdm import tqdm
 from PIL import Image
+
+"""
+python -u -m torch.distributed.launch --nproc_per_node=2 training.py --*args
+--world-size 2 --dist-backend nccl
+"""
 
 parser = argparse.ArgumentParser(
     description='Mathematical symbols Net training routine')
@@ -46,10 +55,12 @@ parser.add_argument('--num-workers', default=2, type=int,
                     help='number of workers used in dataloading')
 parser.add_argument('--split', default='train', type=str,
                     help='name of the dataset split used to train')
-parser.add_argument('--val', default='val', type=str,
+parser.add_argument('--val', default='test', type=str,
                     help='name of the dataset split used to validate')
 parser.add_argument('--eval', default='test', type=str,
                     help='name of the dataset split used to evaluate')
+parser.add_argument('--backend', default='vgg16', type=str,
+                    help='base architecture to train')
 # Realizar la evaluación antes del entrenamiento
 parser.add_argument('--eval-first', default=False, action='store_true',
                     help='evaluate model weights before training')
@@ -83,6 +94,16 @@ parser.add_argument('--optim-snapshot', type=str,
                     default='weights/texture_optim.pth',
                     help='path to optimizer state snapshot')
 
+# Distributed settings
+parser.add_argument('--dist-backend', default='gloo', type=str,
+                    help='distributed backend')
+parser.add_argument('--local_rank', default=0, type=int,
+                    help='distributed node rank number identification')
+parser.add_argument('--world-size', default=1, type=int,
+                    help='number of distributed processes')
+parser.add_argument('--pin-memory', action='store_true', default=False,
+                    help='enable DataLoader CUDA memory pinning')
+
 # Other settings
 parser.add_argument('--visdom', type=str, default=None,
                     help='visdom URL endpoint')
@@ -98,95 +119,75 @@ print('\n'.join(['--{0} {1}'.format(arg, args_dict[arg])
 print('\n')
 
 args.cuda = not args.no_cuda and torch.cuda.is_available()
+if args.cuda:
+    torch.cuda.set_device(args.local_rank)
+
+args.distributed = args.world_size > 1
+
+args.rank = 0
+args.nodes = 1
+
+if args.distributed:
+    print('Starting distribution node')
+    dist.init_process_group(args.dist_backend, init_method='env://')
+    print('Done!')
+
+    args.rank = dist.get_rank()
+    args.nodes = dist.get_world_size()
 
 torch.manual_seed(args.seed)
 if args.cuda:
     torch.cuda.manual_seed(args.seed)
 
-transform = transforms.ToTensor()
+transform = Compose([
+    ToTensor(),
+    Normalize(
+        mean=[0.485, 0.456, 0.406],
+        std=[0.229, 0.224, 0.225])
+])
 
-trainset = torchvision.datasets.ImageFolder(
-    root=osp.join(args.data, args.split), transform=transform)
+trainset = MathDataset(args.data, args.split, transform=transform)
 
-train_loader = torch.utils.data.DataLoader(
-    trainset, batch_size=args.batch_size, shuffle=True, pin_memory=False,
-    num_workers=args.workers)
+if args.distributed:
+    train_sampler = DistributedSampler(trainset)
+else:
+    train_sampler = None
+
+train_loader = DataLoader(trainset, batch_size=args.batch_size,
+                          shuffle=(train_sampler is None),
+                          sampler=train_sampler,
+                          pin_memory=args.pin_memory,
+                          num_workers=args.workers)
 
 start_epoch = args.start_epoch
 
 if args.val:
-    valset = torchvision.datasets.ImageFolder(
-        root=osp.join(args.data, args.val), transform=transform)
+    valset = MathDataset(args.data, args.val, transform=transform)
 
-    val_loader = torch.utils.data.DataLoader(
-        valset, batch_size=args.batch_size, pin_memory=False,
-        num_workers=args.workers)
+    val_sampler = None
+    if args.distributed:
+        val_sampler = DistributedSampler(valset)
+
+    val_loader = DataLoader(refer_val, batch_size=args.batch_size,
+                            pin_memory=args.pin_memory,
+                            num_workers=args.workers,
+                            sampler=val_sampler)
 
 if not osp.exists(args.save_folder):
     os.makedirs(args.save_folder)
 
-
-classes = ('bark1', 'bark2', 'bark3', 'wood1', 'wood2', 'wood1', 'water',
-           'granite', 'marbel', 'floor1', 'floor2', 'pebbles', 'wall',
-           'brick1', 'brick2', 'glass1', 'glass2', 'carpet1', 'carpet2',
-           'upholstery', 'wallpaper', 'fur', 'knit', 'corduroy', 'plaid')
-
-
-class Net(nn.Module):
-
-    def __init__(self):
-        super(Net, self).__init__()
-        self.conv1 = nn.Conv2d(3, 64, 3)
-        self.conv2 = nn.Conv2d(64, 64, 3)
-        self.conv3 = nn.Conv2d(64, 128, 3)
-        self.conv4 = nn.Conv2d(128, 128, 3)
-        self.conv5 = nn.Conv2d(128, 256, 3)
-        self.conv6 = nn.Conv2d(256, 256, 3)
-        self.conv7 = nn.Conv2d(256, 256, 3)
-        self.conv8 = nn.Conv2d(256, 512, 3)
-        self.conv9 = nn.Conv2d(512, 512, 3)
-        self.conv10 = nn.Conv2d(512, 512, 3)
-        self.fc1 = nn.Linear(512*5*5, 25)
-
-    def forward(self, x):
-        x = F.selu(self.conv1(x))
-        x = F.selu(self.conv2(x))
-        y = x
-        x = F.max_pool2d(x,2)
-        x = F.selu(self.conv3(x))
-        x = F.selu(self.conv4(x))
-        z = x
-        x = F.max_pool2d(x,2)
-        x = F.selu(self.conv5(x))
-        x = F.selu(self.conv6(x))
-        x = F.selu(self.conv7(x))
-        w = x
-        x = F.max_pool2d(x,2)
-        x = F.selu(self.conv8(x))
-        x = F.selu(self.conv9(x))
-        x = F.selu(self.conv10(x))
-        x = F.upsample(x, size=(y.size(-2), y.size(-1)), mode='bilinear')
-        z = F.upsample(z, size=(y.size(-2), y.size(-1)), mode='bilinear')
-        w = F.upsample(w, size=(y.size(-2), y.size(-1)), mode='bilinear')
-        x = torch.cat([x,y,z,w], dim=1)
-        x = F.selu(self.convL(x))
-        x = x.view(-1, 512*5*5)
-        x = self.fc1(x)
-        return F.log_softmax(x, dim=1)
-
-    def load_state_dict(self, new_state):
-        state = self.state_dict()
-        for layer in state:
-            if layer in new_state:
-                if state[layer].size() == new_state[layer].size():
-                    state[layer] = new_state[layer]
-        super().load_state_dict(state)
-
-
-net = Net()
+net = create_model(args.backend,
+                   num_classes=len(trainset.labels),
+                   pretrained=True, **kwargs)
 
 if osp.exists(args.snapshot):
     net.load_state_dict(torch.load(args.snapshot))
+
+if args.distributed:
+    if args.cuda:
+        net = net.cuda()
+    net = parallel.DistributedDataParallel(
+        net, device_ids=[args.local_rank], output_device=args.local_rank)
 
 if args.cuda:
     net = net.cuda()
@@ -229,11 +230,13 @@ def train(epoch):
     total_loss = AverageMeter()
     epoch_loss_stats = AverageMeter()
     start_time = time.time()
+    if args.distributed:
+        train_sampler.set_epoch(epoch)
 
     bar = tqdm(enumerate(train_loader))
     for batch_idx, (inputs, labels) in bar:
-        inputs = Variable(inputs)
-        labels = Variable(labels)
+        inputs = inputs.requires_grad_()
+        labels = labels.requires_grad_()
         if args.cuda:
             inputs = inputs.cuda()
             labels = labels.cuda()
@@ -243,8 +246,8 @@ def train(epoch):
         loss.backward()
         optimizer.step()
 
-        total_loss.update(loss.data[0], inputs.size(0))
-        epoch_loss_stats.update(loss.data[0], inputs.size(0))
+        total_loss.update(loss.item(), inputs.size(0))
+        epoch_loss_stats.update(loss.item(), inputs.size(0))
 
         if args.visdom is not None:
             cur_iter = batch_idx + (epoch - 1) * len(train_loader)
@@ -254,20 +257,22 @@ def train(epoch):
                           update='append')
 
         if batch_idx % args.backup_iters == 0:
-            filename = 'texture_{0}_snapshot.pth'.format(args.split)
+            filename = 'math_{0}_snapshot.pth'.format(args.split)
             filename = osp.join(args.save_folder, filename)
             state_dict = net.state_dict()
             torch.save(state_dict, filename)
 
-            optim_filename = 'texture_{0}_optim.pth'.format(args.split)
+            optim_filename = 'math_{0}_optim.pth'.format(args.split)
             optim_filename = osp.join(args.save_folder, optim_filename)
             state_dict = optimizer.state_dict()
             torch.save(state_dict, optim_filename)
 
         if batch_idx % args.log_interval == 0:
             elapsed_time = time.time() - start_time
-            bar.set_description('[{:5d}] ({:5d}/{:5d}) | ms/batch {:.6f} |'
+            bar.set_description('{:2d}/{:2d} [{:5d}] ({:5d}/{:5d}) '
+                                '| ms/batch {:.6f} |'
                                 ' loss {:.6f} | lr {:.7f}'.format(
+                                    args.rank, args.nodes - 1,
                                     epoch, batch_idx, len(train_loader),
                                     elapsed_time * 1000, total_loss.avg,
                                     optimizer.param_groups[0]['lr']))
@@ -287,48 +292,27 @@ def train(epoch):
 
 def val(epoch, loader):
     net.eval()
+    if args.distributed:
+        val_sampler.set_epoch(epoch)
     acc_meter = AverageMeter()
     epoch_loss_stats = AverageMeter()
     start_time = time.time()
 
     bar = tqdm(enumerate(loader))
     for batch_idx, (inputs, labels) in bar:
-        inputs = Variable(inputs, volatile=True)
-        labels = Variable(labels, volatile=True)
-        if args.cuda:
-            inputs = inputs.cuda()
-            labels = labels.cuda()
+        with torch.no_grad():
+            if args.cuda:
+                inputs = inputs.cuda()
+                labels = labels.cuda()
 
-        outputs = net(inputs)
-        loss = criterion(outputs, labels)
-        epoch_loss_stats.update(loss.data[0], inputs.size(0))
-        _, predicted = torch.max(outputs.data, 1)
-        correct = (predicted == labels.data).sum() / inputs.size(0)
-        acc_meter.update(correct, inputs.size(0))
+            outputs = net(inputs)
+            loss = criterion(outputs, labels)
+            epoch_loss_stats.update(loss.item(), inputs.size(0))
+            _, predicted = torch.max(outputs, 1)
+            correct = (predicted == labels).sum() / inputs.size(0)
+            acc_meter.update(correct, inputs.size(0))
 
     return epoch_loss_stats.avg, acc_meter.avg
-
-
-def test():
-    print("Writing predictions")
-    net.eval()
-    labels = {}
-    files = glob.glob(osp.join(args.data, "{0}_128/label_00/*.jpg".format(args.eval)))
-    for file in tqdm(files):
-        _id, _ = osp.splitext(osp.basename(file))
-        img = Image.open(file)
-        #img = transforms.ToTensor()(img)
-        img = transform(img)
-        if img.size(0) == 1:
-            img = torch.stack([img] * 3, dim=1).squeeze()
-        img = Variable(img, volatile=True).unsqueeze(0).cuda()
-        output = net(img)
-        output = output.cpu()
-        _, predicted = output.max(1, keepdim=True)
-        labels[_id] = predicted[0]
-
-    with open(args.predictions, 'w') as f:
-        f.write('\n'.join(['{0},{1}'.format(k, labels[k].data[0]) for k in labels]))
 
 
 if __name__ == '__main__':
@@ -369,15 +353,14 @@ if __name__ == '__main__':
             print('-' * 89)
             if best_val_acc is None or val_acc > best_val_acc:
                 best_val_acc = val_acc
-                filename = osp.join(args.save_folder, 'textures_best_weights.pth')
+                filename = osp.join(args.save_folder, 'math_best_weights.pth')
                 torch.save(net.state_dict(), filename)
-        #test()
+        # test()
     except KeyboardInterrupt:
         print('-' * 89)
         print('Exiting from training early')
     finally:
-        filename = osp.join(args.save_folder, 'textures_best_weights.pth')
+        filename = osp.join(args.save_folder, 'math_best_weights.pth')
         if osp.exists(filename):
             net.load_state_dict(torch.load(filename))
-        #test()
-
+        # test()
