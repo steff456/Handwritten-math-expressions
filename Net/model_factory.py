@@ -6,6 +6,7 @@ import torch.nn as nn
 
 import re
 import math
+import torch.nn as nn
 from dpn_model import dpn68, dpn68b, dpn92, dpn98, dpn131, dpn107
 import torchvision.models.resnet as resnet
 from torchvision.models.resnet import (
@@ -16,7 +17,7 @@ from torchvision.models.densenet import (
 import torchvision.models.inception as inception
 from torchvision.models.inception import inception_v3
 import torchvision.models.vgg as vgg
-from torchvision.models.vgg import vgg16
+from torchvision.models.vgg import vgg16 as vgg16_builder
 import torchvision.transforms as transforms
 import torch.utils.model_zoo as model_zoo
 from PIL import Image
@@ -24,6 +25,27 @@ from PIL import Image
 VGG16_URL = 'https://download.pytorch.org/models/vgg16-397923af.pth'
 MODULE_REGEX = r'([a-zA-Z]+)((_.*)|(\d+))'
 REGEX = re.compile(MODULE_REGEX)
+
+
+def vgg16(*args, num_classes=1000, **kwargs):
+    pretrained = False
+    if 'pretrained' in kwargs:
+        pretrained = kwargs['pretrained']
+        kwargs['pretrained'] = False
+    base_vgg = vgg_builder(*args, **kwargs)
+    classifier = nn.Sequential(
+        nn.Linear(512 * 1, 128),
+        nn.ReLU(True),
+        nn.Dropout(),
+        nn.Linear(128, 128),
+        nn.ReLU(True),
+        nn.Dropout(),
+        nn.Linear(128, num_classes)
+    )
+    base_vgg = list(base_vgg.children())[:-1]
+    base_vgg += [classifier]
+    model = nn.Sequential(*base_vgg)
+    return model
 
 
 def create_model(model_name, num_classes=1000, pretrained=False, **kwargs):
