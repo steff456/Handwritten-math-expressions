@@ -160,7 +160,8 @@ train_loader = DataLoader(trainset, batch_size=args.batch_size,
 start_epoch = args.start_epoch
 
 if args.val:
-    valset = MathDataset(args.data, args.val, transform=transform)
+    valset = MathDataset(args.data, args.val, transform=transform,
+                         num_images={'testSymbols': None})
 
     val_sampler = None
     if args.distributed:
