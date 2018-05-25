@@ -377,6 +377,6 @@ class DPN(nn.Module):
         state = self.state_dict()
         for key in state:
             if key in new_state:
-                if state[key].size() == new_state.size():
+                if state[key].size() == new_state[key].size():
                     state[key] = new_state[key]
         super(DPN, self).load_state_dict(state)
