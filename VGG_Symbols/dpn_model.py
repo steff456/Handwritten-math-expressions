@@ -56,7 +56,7 @@ model_urls = {
 
 
 def dpn68(num_classes=1000, pretrained=False, test_time_pool=True,
-          output=False):
+          output=True):
     model = DPN(
         small=True, num_init_features=10, k_r=128, groups=32,
         k_sec=(3, 4, 12, 3), inc_sec=(16, 32, 32, 64),
@@ -72,7 +72,7 @@ def dpn68(num_classes=1000, pretrained=False, test_time_pool=True,
 
 
 def dpn68b(num_classes=1000, pretrained=False, test_time_pool=True,
-           output=False):
+           output=True):
     model = DPN(
         small=True, num_init_features=10, k_r=128, groups=32,
         b=True, k_sec=(3, 4, 12, 3), inc_sec=(16, 32, 32, 64),
@@ -88,7 +88,7 @@ def dpn68b(num_classes=1000, pretrained=False, test_time_pool=True,
 
 
 def dpn92(num_classes=1000, pretrained=False, test_time_pool=True, extra=True,
-          output=False):
+          output=True):
     model = DPN(
         num_init_features=64, k_r=96, groups=32,
         k_sec=(3, 4, 20, 3), inc_sec=(16, 32, 24, 128),
@@ -108,7 +108,7 @@ def dpn92(num_classes=1000, pretrained=False, test_time_pool=True, extra=True,
 
 
 def dpn98(num_classes=1000, pretrained=False, test_time_pool=True,
-          output=False):
+          output=True):
     model = DPN(
         num_init_features=96, k_r=160, groups=40,
         k_sec=(3, 6, 20, 3), inc_sec=(16, 32, 32, 128),
@@ -123,7 +123,7 @@ def dpn98(num_classes=1000, pretrained=False, test_time_pool=True,
 
 
 def dpn131(num_classes=1000, pretrained=False, test_time_pool=True,
-           output=False):
+           output=True):
     model = DPN(
         num_init_features=128, k_r=160, groups=40,
         k_sec=(4, 8, 28, 3), inc_sec=(16, 32, 32, 128),
@@ -138,7 +138,7 @@ def dpn131(num_classes=1000, pretrained=False, test_time_pool=True,
 
 
 def dpn107(num_classes=1000, pretrained=False, test_time_pool=True,
-           output=False):
+           output=True):
     model = DPN(
         num_init_features=128, k_r=200, groups=50,
         k_sec=(4, 8, 20, 3), inc_sec=(20, 64, 64, 128),
@@ -272,7 +272,7 @@ class DualPathBlock(nn.Module):
 class DPN(nn.Module):
     def __init__(self, small=False, num_init_features=64, k_r=96, groups=32,
                  b=False, k_sec=(3, 4, 20, 3), inc_sec=(16, 32, 24, 128),
-                 num_classes=1000, test_time_pool=False, output=False):
+                 num_classes=1000, test_time_pool=False, output=True):
         super(DPN, self).__init__()
         self.test_time_pool = test_time_pool
         self.b = b
