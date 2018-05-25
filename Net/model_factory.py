@@ -44,22 +44,22 @@ class VGG16(nn.Module):
         self.fc1 = nn.Linear(460800, num_classes)
 
     def forward(self, x):
-        x = F.relu(self.conv1(x))
-        x = F.relu(self.conv2(x))
+        x = F.selu(self.conv1(x))
+        x = F.selu(self.conv2(x))
         # y = x
         # x = F.max_pool2d(x, 2)
-        x = F.relu(self.conv3(x))
-        x = F.relu(self.conv4(x))
+        x = F.selu(self.conv3(x))
+        x = F.selu(self.conv4(x))
         # z = x
         # x = F.max_pool2d(x, 2)
-        x = F.relu(self.conv5(x))
-        x = F.relu(self.conv6(x))
-        x = F.relu(self.conv7(x))
+        x = F.selu(self.conv5(x))
+        x = F.selu(self.conv6(x))
+        x = F.selu(self.conv7(x))
         # w = x
         # x = F.max_pool2d(x, 2)
-        x = F.relu(self.conv8(x))
-        x = F.relu(self.conv9(x))
-        x = F.relu(self.conv10(x))
+        x = F.selu(self.conv8(x))
+        x = F.selu(self.conv9(x))
+        x = F.selu(self.conv10(x))
         # x = F.upsample(x, size=(y.size(-2), y.size(-1)), mode='bilinear')
         # z = F.upsample(z, size=(y.size(-2), y.size(-1)), mode='bilinear')
         # w = F.upsample(w, size=(y.size(-2), y.size(-1)), mode='bilinear')
