@@ -29,7 +29,7 @@ REGEX = re.compile(MODULE_REGEX)
 
 class VGG16(nn.Module):
     def __init__(self, *args, num_classes=1000, pretrained=None, **kwargs):
-        super(Net, self).__init__()
+        super(VGG16, self).__init__()
         self.conv1 = nn.Conv2d(3, 64, 3)
         self.conv2 = nn.Conv2d(64, 64, 3)
         self.conv3 = nn.Conv2d(64, 128, 3)
