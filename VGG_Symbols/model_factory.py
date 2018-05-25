@@ -30,7 +30,8 @@ def vgg16(*args, **kwargs):
     if 'pretrained' in kwargs:
         pretrained = kwargs['pretrained']
         kwargs['pretrained'] = False
-    base_vgg = vgg(*args, **kwargs)
+    base_vgg = vgg_builder(*args, **kwargs)
+
 
 def create_model(model_name, num_classes=1000, pretrained=False, **kwargs):
     if model_name in globals():

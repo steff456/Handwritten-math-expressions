@@ -340,38 +340,22 @@ class DPN(nn.Module):
         self.features = nn.Sequential(blocks)
 
         self.output = output
-        if self.output:
-            # Using 1x1 conv for the FC layer to allow the extra pooling scheme
-            self.classifier = nn.Conv2d(
-                in_chs, num_classes, kernel_size=1, bias=True)
+        # if self.output:
+        # Using 1x1 conv for the FC layer to allow the extra pooling scheme
+        self.classifier = nn.Conv2d(
+            in_chs, num_classes, kernel_size=1, bias=True)
 
     def forward(self, x):
-        # out = self.features(x)
-        out = x
-        features = []
-        for name, module in self.features.named_children():
-            if name == 'conv1_1':
-                out, feat = module(out)
-                features.append(feat)
-            else:
-                out = module(out)
-                if name in ['conv2_3', 'conv3_4', 'conv4_20', 'conv5_3']:
-                    if isinstance(out, tuple):
-                        features.append(torch.cat(out, dim=1))
-                    else:
-                        features.append(out)
-        if self.output:
-            if not self.training and self.test_time_pool:
-                out = F.avg_pool2d(out, kernel_size=7, stride=1)
-                out = self.classifier(out)
-                # The extra test time pool should be pooling an
-                # img_size//32 - 6 size patch
-                out = adaptive_avgmax_pool2d(out, pool_type='avgmax')
-            else:
-                # x = adaptive_avgmax_pool2d(x, pool_type='avg')
-                out = self.classifier(x)
-            out = out.view(out.size(0), -1)
-        return out
+        x = self.features(x)
+        if not self.training and self.test_time_pool:
+            x = F.avg_pool2d(x, kernel_size=7, stride=1)
+            out = self.classifier(x)
+            # The extra test time pool should be pooling an img_size//32 - 6 size patch
+            out = adaptive_avgmax_pool2d(out, pool_type='avgmax')
+        else:
+            x = adaptive_avgmax_pool2d(x, pool_type='avg')
+            out = self.classifier(x)
+        return out.view(out.size(0), -1)
 
     def load_state_dict(self, new_state):
         state = self.state_dict()
