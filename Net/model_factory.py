@@ -41,6 +41,8 @@ class VGG16(nn.Module):
         self.conv8 = nn.Conv2d(256, 512, 3)
         self.conv9 = nn.Conv2d(512, 512, 3)
         self.conv10 = nn.Conv2d(512, 512, 3)
+        self.conv11 = nn.Conv2d(512, 512, 3)
+        self.conv12 = nn.Conv2d(512, 512, 3)
         self.fc1 = nn.Linear(460800, num_classes)
 
     def forward(self, x):
@@ -65,6 +67,8 @@ class VGG16(nn.Module):
         # w = F.upsample(w, size=(y.size(-2), y.size(-1)), mode='bilinear')
         # x = torch.cat([x, y, z, w], dim=1)
         # x = F.selu(self.convL(x))
+        x = F.selu(self.conv11(x))
+        x = F.selu(self.conv12(x))
         x = x.view(x.size(0), -1)
         x = self.fc1(x)
         return F.log_softmax(x, dim=1)
