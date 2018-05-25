@@ -125,7 +125,10 @@ class MathDataset(data.Dataset):
     def __getitem__(self, idx):
         image, label = self.pull_item(idx)
         target = self.labels[label]
-
+        image = np.array(image)
+        if image.ndim == 2:
+            image = np.stack([image] * 3, dim=-1)
+        image = Image.fromarray(image)
         if self.transform is not None:
             image = self.transform(image)
         if self.annotation_transform is not None:
