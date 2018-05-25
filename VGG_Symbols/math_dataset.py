@@ -12,7 +12,6 @@ class MathException(Exception):
     pass
 
 
-
 class Modes:
     CLASSIFICATION = "classification"
     RECOGNITION = "recognition"

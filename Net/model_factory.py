@@ -11,48 +11,27 @@ from torchvision.models.resnet import (
 from torchvision.models.densenet import (
     densenet121, densenet169, densenet161, densenet201)
 from torchvision.models.inception import inception_v3
-from torchvision.models.vgg import vgg16
+from torchvision.models.vgg import vgg16 as vgg
 import torchvision.transforms as transforms
 import torch.utils.model_zoo as model_zoo
 from PIL import Image
 
 VGG16_URL = 'https://download.pytorch.org/models/vgg16-397923af.pth'
 
-# def vgg16(*args, **kwargs):
-#     pretrained = False
-#     if 'pretrained' in kwargs:
-#         pretrained = kwargs['pretrained']
-#         kwargs['pretrained'] = False
-#     base_vgg = vgg(*args, **kwargs)
-#     conv_fc6 = nn.Conv2d(in_channels=512,
-#                          out_channels=4096,
-#                          kernel_size=7,
-#                          padding=3)
-#
-#     conv_fc7 = nn.Conv2d(in_channels=4096,
-#                          out_channels=4096,
-#                          kernel_size=1,
-#                          padding=0)
-#
-#     conv_fc8 = nn.Conv2d(in_channels=4096,
-#                          out_channels=2688,
-#                          kernel_size=1,
-#                          padding=0)
-#
-#     fconv_layers = []
-#     for layer in (conv_fc6, conv_fc7, conv_fc8):
-#         fconv_layers += [layer, nn.ReLU(), nn.Dropout(p=0.2)]
-#     base_vgg = list(base_vgg.children())[:-1]
-#     base_vgg += fconv_layers
-#     model = nn.Sequential(*base_vgg)
-#     if pretrained:
-#         state_dict = model.state_dict()
-#         pretrained_state = model_zoo.load_url(VGG16_URL)
-#         for layer_name in pretrained_state:
-#             if layer_name in state_dict:
-#                 state_dict[layer_name] = pretrained_state[layer_name]
-#         model.load_state_dict(state_dict)
-#     return model
+def vgg16(*args, **kwargs):
+    pretrained = False
+    if 'pretrained' in kwargs:
+        pretrained = kwargs['pretrained']
+        kwargs['pretrained'] = False
+    base_vgg = vgg(*args, **kwargs)
+    if pretrained:
+        state_dict = model.state_dict()
+        pretrained_state = model_zoo.load_url(VGG16_URL)
+        for layer_name in pretrained_state:
+            if layer_name in state_dict:
+                state_dict[layer_name] = pretrained_state[layer_name]
+        model.load_state_dict(state_dict)
+    return model
 
 
 def create_model(model_name, num_classes=1000, pretrained=False, **kwargs):
