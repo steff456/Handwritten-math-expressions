@@ -22,7 +22,7 @@ import torch.utils.model_zoo as model_zoo
 from PIL import Image
 
 VGG16_URL = 'https://download.pytorch.org/models/vgg16-397923af.pth'
-MODULE_REGEX = r'(\s+)(_.*|\d+)'
+MODULE_REGEX = r'([a-zA-Z]+)((_.*)|(\d+))'
 REGEX = re.compile(MODULE_REGEX)
 
 
