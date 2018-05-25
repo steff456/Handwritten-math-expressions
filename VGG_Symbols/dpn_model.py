@@ -371,7 +371,7 @@ class DPN(nn.Module):
                 x = adaptive_avgmax_pool2d(x, pool_type='avg')
                 out = self.classifier(x)
             out = out.view(out.size(0), -1)
-        return out, features
+        return out
 
     def load_state_dict(self, new_state):
         state = self.state_dict()
