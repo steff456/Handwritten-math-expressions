@@ -177,7 +177,7 @@ if not osp.exists(args.save_folder):
 
 net = create_model(args.backend,
                    num_classes=len(trainset.labels),
-                   pretrained=True, **kwargs)
+                   pretrained=True)
 
 if osp.exists(args.snapshot):
     net.load_state_dict(torch.load(args.snapshot))
