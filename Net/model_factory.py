@@ -41,7 +41,7 @@ class VGG16(nn.Module):
         self.conv8 = nn.Conv2d(256, 512, 3)
         self.conv9 = nn.Conv2d(512, 512, 3)
         self.conv10 = nn.Conv2d(512, 512, 3)
-        self.fc1 = nn.Linear(512*5*5, num_classes)
+        self.fc1 = nn.Linear(460800, num_classes)
 
     def forward(self, x):
         x = F.selu(self.conv1(x))
