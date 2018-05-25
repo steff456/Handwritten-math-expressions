@@ -64,7 +64,7 @@ class VGG16(nn.Module):
         # z = F.upsample(z, size=(y.size(-2), y.size(-1)), mode='bilinear')
         # w = F.upsample(w, size=(y.size(-2), y.size(-1)), mode='bilinear')
         # x = torch.cat([x, y, z, w], dim=1)
-        x = F.selu(self.convL(x))
+        # x = F.selu(self.convL(x))
         x = x.view(-1, 512*5*5)
         x = self.fc1(x)
         return F.log_softmax(x, dim=1)
