@@ -253,7 +253,7 @@ def train(epoch):
             cur_iter = batch_idx + (epoch - 1) * len(train_loader)
             vis.plot_line('train_plt',
                           X=torch.ones((1,)).cpu() * cur_iter,
-                          Y=loss.item().cpu(),
+                          Y=torch.ones((1,)).cpu() * loss.item(),
                           update='append')
 
         if batch_idx % args.backup_iters == 0:
