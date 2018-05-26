@@ -142,7 +142,7 @@ if not osp.exists(args.save_folder):
 class Net(nn.Module):
 
     def __init__(self):
-        super(Net, self)._init_()
+        super(Net, self).__init__()
         self.conv1 = nn.Conv2d(3, 64, 3)
         self.conv2 = nn.Conv2d(64, 64, 3)
         self.conv3 = nn.Conv2d(64, 128, 3)
