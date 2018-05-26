@@ -114,7 +114,7 @@ transform = transforms.Compose([
 ])
 
 trainset = MathDataset(args.data, args.split, transform=transform)
-print(len(trainset.labels))
+# print(len(trainset.labels))
 
 train_loader = torch.utils.data.DataLoader(
     trainset, batch_size=args.batch_size, shuffle=True, pin_memory=False,
@@ -160,7 +160,7 @@ class Net(nn.Module):
         x = F.selu(self.conv4(x))
         # print(x.size())
         x = x.view(x.size(0), -1)
-        print(x.size())
+        # print(x.size())
         x = self.lin1(x)
         x = self.lin2(x)
         x = self.lin3(x)
