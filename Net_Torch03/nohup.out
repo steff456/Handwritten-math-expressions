@@ -1,0 +1,36 @@
+Argument list to program
+--log_interval 200
+--eval test
+--num_workers 2
+--patience 2
+--eval_first False
+--momentum 0.9
+--lr 0.001
+--batch_size 50
+--no_cuda False
+--backup_iters 1000
+--epochs 40
+--optim_snapshot weights/texture_optim.pth
+--visdom None
+--val test
+--seed 1111
+--predictions predictions.txt
+--workers 4
+--data /datadisks/di
+--split train
+--env DMN-train
+--snapshot weights/texture_weights.pth
+--save_folder weights/
+--start_epoch 1
+
+
+Traceback (most recent call last):
+  File "training_viejito.py", line 195, in <module>
+    net = Net()
+  File "training_viejito.py", line 149, in __init__
+    self.lin1 = nn.Linear(835584, 1024)
+  File "/usr/local/lib/python3.5/dist-packages/torch/nn/modules/linear.py", line 46, in __init__
+    self.reset_parameters()
+  File "/usr/local/lib/python3.5/dist-packages/torch/nn/modules/linear.py", line 50, in reset_parameters
+    self.weight.data.uniform_(-stdv, stdv)
+KeyboardInterrupt
