@@ -151,7 +151,7 @@ class Net(nn.Module):
         self.conv6 = nn.Conv2d(256, 256, 3)
         self.conv7 = nn.Conv2d(256, 256, 3)
         self.conv8 = nn.Conv2d(256, 512, 3)
-        self.conv9 = nn.Conv2d(512, 512, 3)
+        # self.conv9 = nn.Conv2d(512, 512, 3)
         # self.conv10 = nn.Conv2d(512, 512, 3)
         self.fc1 = nn.Linear(524288, 102)
 
@@ -167,7 +167,7 @@ class Net(nn.Module):
         x = F.selu(self.conv7(x))
         # x = F.max_pool2d(x, 2)
         x = F.selu(self.conv8(x))
-        x = F.selu(self.conv9(x))
+        # x = F.selu(self.conv9(x))
         # x = F.selu(self.conv10(x))
         # print(x.size())
         x = x.view(x.size(0), -1)
