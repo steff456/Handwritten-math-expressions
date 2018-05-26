@@ -10,8 +10,10 @@ import time
 import glob
 import argparse
 import os.path as osp
-from urllib.parse import urlparse
-
+try:
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
 # PyTorch imports
 import torch
 import torchvision
