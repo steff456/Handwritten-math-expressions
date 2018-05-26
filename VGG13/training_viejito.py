@@ -153,7 +153,7 @@ class Net(nn.Module):
         self.conv8 = nn.Conv2d(256, 512, 3)
         self.conv9 = nn.Conv2d(512, 512, 3)
         self.conv10 = nn.Conv2d(512, 512, 3)
-        self.fc1 = nn.Linear(512*5*5, 102)
+        self.fc1 = nn.Linear(460800, 102)
 
     def forward(self, x):
         x = F.selu(self.conv1(x))
@@ -169,9 +169,9 @@ class Net(nn.Module):
         x = F.selu(self.conv8(x))
         x = F.selu(self.conv9(x))
         x = F.selu(self.conv10(x))
-        print(x.size())
+        # print(x.size())
         x = x.view(x.size(0), -1)
-        print(x.size())
+        # print(x.size())
         x = self.fc1(x)
         # print(x.size())
         return F.log_softmax(x, dim=1)
