@@ -146,7 +146,7 @@ class Net(nn.Module):
         self.conv2 = nn.Conv2d(32, 64, 3)
         self.conv3 = nn.Conv2d(64, 96, 3)
         self.conv4 = nn.Conv2d(96, 128, 3)
-        self.lin1 = nn.Linear(128, 1024)
+        self.lin1 = nn.Linear(835584, 1024)
         self.lin2 = nn.Linear(1024, 512)
         self.lin3 = nn.Linear(512, 102)
         # self.conv7 = nn.Conv2d(256, 256, 3)
@@ -177,7 +177,7 @@ class Net(nn.Module):
         # w = F.upsample(w, size=(y.size(-2), y.size(-1)), mode='bilinear')
         # x = torch.cat([x, y, z, w], dim=1)
         # x = F.selu(self.convL(x))
-        x = x.view(-1, 512*5*5)
+        x = x.view(-1, 835584)
         x = self.lin1(x)
         x = self.lin2(x)
         x = self.lin3(x)
@@ -209,7 +209,8 @@ if args.visdom is not None:
 
     print('Initializing Visdom frontend at: {0}:{1}'.format(
           args.visdom, port))
-    vis = VisdomWrapper(server=visdom_url.geturl(), port=port, env=args.env)
+    vis = VisdomWrapper(server=visdom_url.geturl(), port=port,
+                        env=args.env, use_incoming_socket=False)
 
     vis.init_line_plot('train_plt', xlabel='Iteration', ylabel='Loss',
                        title='Current Model Loss Value', legend=['Loss'])
