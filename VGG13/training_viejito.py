@@ -173,7 +173,7 @@ class Net(nn.Module):
         # x = F.selu(self.conv10(x))
         # print(x.size())
         x = x.view(x.size(0), -1)
-        print(x.size())
+        # print(x.size())
         x = self.fc1(x)
         x = self.fc2(x)
         x = self.fc3(x)
