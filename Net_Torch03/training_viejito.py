@@ -158,11 +158,13 @@ class Net(nn.Module):
         x = F.selu(self.conv3(x))
         x = F.max_pool2d(x, 2)
         x = F.selu(self.conv4(x))
+        print(x.size())
         x = x.view(x.size(0), -1)
+        print(x.size())
         x = self.lin1(x)
         x = self.lin2(x)
         x = self.lin3(x)
-        print(x.size())
+        # print(x.size())
         return F.log_softmax(x, dim=1)
 
     def load_state_dict(self, new_state):
