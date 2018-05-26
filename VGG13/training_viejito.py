@@ -170,7 +170,7 @@ class Net(nn.Module):
         x = F.selu(self.conv9(x))
         x = F.selu(self.conv10(x))
         x = x.view(x.size(0), -1)
-        # print(x.size())
+        print(x.size())
         x = self.fc1(x)
         # print(x.size())
         return F.log_softmax(x, dim=1)
