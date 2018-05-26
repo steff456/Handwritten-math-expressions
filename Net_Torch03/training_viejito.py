@@ -105,7 +105,7 @@ torch.manual_seed(args.seed)
 if args.cuda:
     torch.cuda.manual_seed(args.seed)
 
-transform = Compose([
+transform = transforms.Compose([
     ToTensor(),
     Normalize(
         mean=[0.485, 0.456, 0.406],
