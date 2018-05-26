@@ -27,6 +27,7 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 # Local imports
 from utils import AverageMeter
 from utils.misc_utils import VisdomWrapper
+from math_dataset import MathDataset
 
 # Other imports
 from tqdm import tqdm
