@@ -114,7 +114,7 @@ transform = transforms.Compose([
 ])
 
 trainset = MathDataset(args.data, args.split, transform=transform)
-print(trainset.labels)
+print(len(trainset.labels))
 
 train_loader = torch.utils.data.DataLoader(
     trainset, batch_size=args.batch_size, shuffle=True, pin_memory=False,
