@@ -46,7 +46,7 @@ parser.add_argument('--num-workers', default=2, type=int,
                     help='number of workers used in dataloading')
 parser.add_argument('--split', default='train', type=str,
                     help='name of the dataset split used to train')
-parser.add_argument('--val', default='val', type=str,
+parser.add_argument('--val', default='test', type=str,
                     help='name of the dataset split used to validate')
 parser.add_argument('--eval', default='test', type=str,
                     help='name of the dataset split used to evaluate')
@@ -103,13 +103,14 @@ torch.manual_seed(args.seed)
 if args.cuda:
     torch.cuda.manual_seed(args.seed)
 
-transform = transforms.Compose([
-    transforms.ColorJitter(), transforms.RandomHorizontalFlip(),
-    transforms.RandomCrop((128, 128)), transforms.ToTensor()
-    ])
+transform = Compose([
+    ToTensor(),
+    Normalize(
+        mean=[0.485, 0.456, 0.406],
+        std=[0.229, 0.224, 0.225])
+])
 
-trainset = torchvision.datasets.ImageFolder(
-    root=osp.join(args.data, args.split) + "_128", transform=transform)
+trainset = MathDataset(args.data, args.split, transform=transform)
 
 train_loader = torch.utils.data.DataLoader(
     trainset, batch_size=args.batch_size, shuffle=True, pin_memory=False,
@@ -118,8 +119,8 @@ train_loader = torch.utils.data.DataLoader(
 start_epoch = args.start_epoch
 
 if args.val:
-    valset = torchvision.datasets.ImageFolder(
-        root=osp.join(args.data, args.val) + "_128", transform=transform)
+    valset = MathDataset(args.data, args.val, transform=transform,
+                         num_images={'testSymbols': None})
 
     val_loader = torch.utils.data.DataLoader(
         valset, batch_size=args.batch_size, pin_memory=False,
@@ -128,53 +129,55 @@ if args.val:
 if not osp.exists(args.save_folder):
     os.makedirs(args.save_folder)
 
-
-classes = ('bark1', 'bark2', 'bark3', 'wood1', 'wood2', 'wood1', 'water',
-           'granite', 'marbel', 'floor1', 'floor2', 'pebbles', 'wall',
-           'brick1', 'brick2', 'glass1', 'glass2', 'carpet1', 'carpet2',
-           'upholstery', 'wallpaper', 'fur', 'knit', 'corduroy', 'plaid')
+# classes = ('bark1', 'bark2', 'bark3', 'wood1', 'wood2', 'wood1', 'water',
+#            'granite', 'marbel', 'floor1', 'floor2', 'pebbles', 'wall',
+#            'brick1', 'brick2', 'glass1', 'glass2', 'carpet1', 'carpet2',
+#            'upholstery', 'wallpaper', 'fur', 'knit', 'corduroy', 'plaid')
 
 
 class Net(nn.Module):
 
     def __init__(self):
         super(Net, self).__init__()
-        self.conv1 = nn.Conv2d(3, 64, 3)
-        self.conv2 = nn.Conv2d(64, 64, 3)
-        self.conv3 = nn.Conv2d(64, 128, 3)
-        self.conv4 = nn.Conv2d(128, 128, 3)
-        self.conv5 = nn.Conv2d(128, 256, 3)
-        self.conv6 = nn.Conv2d(256, 256, 3)
-        self.conv7 = nn.Conv2d(256, 256, 3)
-        self.conv8 = nn.Conv2d(256, 512, 3)
-        self.conv9 = nn.Conv2d(512, 512, 3)
-        self.conv10 = nn.Conv2d(512, 512, 3)
-        self.fc1 = nn.Linear(512*5*5, 25)
+        self.conv1 = nn.Conv2d(3, 32, 3)
+        self.conv2 = nn.Conv2d(32, 64, 3)
+        self.conv3 = nn.Conv2d(64, 96, 3)
+        self.conv4 = nn.Conv2d(96, 128, 3)
+        self.lin1 = nn.Linear(128, 1024)
+        self.lin2 = nn.Linear(1024, 512)
+        self.lin3 = nn.Linear(512, 102)
+        # self.conv7 = nn.Conv2d(256, 256, 3)
+        # self.conv8 = nn.Conv2d(256, 512, 3)
+        # self.conv9 = nn.Conv2d(512, 512, 3)
+        # self.conv10 = nn.Conv2d(512, 512, 3)
+        # self.fc1 = nn.Linear(512*5*5, 25)
 
     def forward(self, x):
         x = F.selu(self.conv1(x))
+        x = F.max_pool2d(x, 2)
         x = F.selu(self.conv2(x))
-        y = x
-        x = F.max_pool2d(x,2)
         x = F.selu(self.conv3(x))
+        x = F.max_pool2d(x, 2)
         x = F.selu(self.conv4(x))
-        z = x
-        x = F.max_pool2d(x,2)
-        x = F.selu(self.conv5(x))
-        x = F.selu(self.conv6(x))
-        x = F.selu(self.conv7(x))
-        w = x
-        x = F.max_pool2d(x,2)
-        x = F.selu(self.conv8(x))
-        x = F.selu(self.conv9(x))
-        x = F.selu(self.conv10(x))
-        x = F.upsample(x, size=(y.size(-2), y.size(-1)), mode='bilinear')
-        z = F.upsample(z, size=(y.size(-2), y.size(-1)), mode='bilinear')
-        w = F.upsample(w, size=(y.size(-2), y.size(-1)), mode='bilinear')
-        x = torch.cat([x,y,z,w], dim=1)
-        x = F.selu(self.convL(x))
+        # z = x
+        # x = F.max_pool2d(x, 2)
+        # x = F.selu(self.conv5(x))
+        # x = F.selu(self.conv6(x))
+        # x = F.selu(self.conv7(x))
+        # w = x
+        # x = F.max_pool2d(x, 2)
+        # x = F.selu(self.conv8(x))
+        # x = F.selu(self.conv9(x))
+        # x = F.selu(self.conv10(x))
+        # x = F.upsample(x, size=(y.size(-2), y.size(-1)), mode='bilinear')
+        # z = F.upsample(z, size=(y.size(-2), y.size(-1)), mode='bilinear')
+        # w = F.upsample(w, size=(y.size(-2), y.size(-1)), mode='bilinear')
+        # x = torch.cat([x, y, z, w], dim=1)
+        # x = F.selu(self.convL(x))
         x = x.view(-1, 512*5*5)
-        x = self.fc1(x)
+        x = self.lin1(x)
+        x = self.lin2(x)
+        x = self.lin3(x)
         return F.log_softmax(x, dim=1)
 
     def load_state_dict(self, new_state):
@@ -320,7 +323,7 @@ def test():
     for file in tqdm(files):
         _id, _ = osp.splitext(osp.basename(file))
         img = Image.open(file)
-        #img = transforms.ToTensor()(img)
+        # img = transforms.ToTensor()(img)
         img = transform(img)
         if img.size(0) == 1:
             img = torch.stack([img] * 3, dim=1).squeeze()
@@ -383,4 +386,3 @@ if __name__ == '__main__':
         if osp.exists(filename):
             net.load_state_dict(torch.load(filename))
         test()
-
