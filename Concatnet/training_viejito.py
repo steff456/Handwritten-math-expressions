@@ -178,15 +178,15 @@ class Net(nn.Module):
         x = F.upsample(x, size=(y.size(-2), y.size(-1)), mode='bilinear')
         x = torch.cat([x, y], dim=1)
         # 9,75
-        x = F.selu(self.conv7(x))
-        x = F.max_pool2d(x, 2)
-        y = x
-        x = F.selu(self.conv8(x))
-        x = self.drop3(x)
-        x = F.selu(self.conv9(x))
+        # x = F.selu(self.conv7(x))
+        # x = F.max_pool2d(x, 2)
+        # y = x
+        # x = F.selu(self.conv8(x))
+        # x = self.drop3(x)
+        # x = F.selu(self.conv9(x))
         # sum
-        x = F.upsample(x, size=(y.size(-2), y.size(-1)), mode='bilinear')
-        x = torch.cat([x, y], dim=1)
+        # x = F.upsample(x, size=(y.size(-2), y.size(-1)), mode='bilinear')
+        # x = torch.cat([x, y], dim=1)
         # 3,375
         x = x.view(x.size(0), -1)
         print(x.size())
