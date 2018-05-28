@@ -155,7 +155,7 @@ class Net(nn.Module):
         self.conv8 = nn.Conv2d(256, 256, 3)
         self.conv9 = nn.Conv2d(256, 256, 3)
         self.drop3 = nn.Dropout2d()
-        self.fc1 = nn.Linear(25600, 5000)
+        self.fc1 = nn.Linear(8192, 5000)
         self.fc2 = nn.Linear(5000, 1020)
         self.fc3 = nn.Linear(1020, 102)
 
@@ -191,7 +191,7 @@ class Net(nn.Module):
         x = torch.cat([x, y], dim=1)
         # 3,375
         x = x.view(x.size(0), -1)
-        print(x.size())
+        # print(x.size())
         x = self.fc1(x)
         x = self.fc2(x)
         x = self.fc3(x)
