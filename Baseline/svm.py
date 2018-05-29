@@ -3,39 +3,49 @@ import itertools
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix
 from sklearn import svm
-from charge import save_var
 
-train = np.load('HOG_train.npy')
-test = np.load('HOG_test.npy')
-train = train.item()
-test = test.item()
 
-train_data = []
-train_labels = []
-for key in train.keys():
-    act_hog = train[key]
-    for i in range(0, len(act_hog)):
-        train_labels.append(key)
-        train_data.append(act_hog[i])
+def classify(train, test):
+    # train = np.load('HOG_train.npy')
+    # test = np.load('HOG_test.npy')
+    train = train.item()
+    test = test.item()
 
-test_data = []
-test_labels = []
-for key in train.keys():
-    act_hog = test[key]
-    for i in range(0, len(act_hog)):
-        test_labels.append(key)
-        test_data.append(act_hog[i])
+    train_data = []
+    train_labels = []
+    for key in train.keys():
+        act_hog = train[key]
+        for i in range(0, len(act_hog)):
+            train_labels.append(key)
+            train_data.append(act_hog[i])
 
-lin_clf = svm.LinearSVC()
-lin_clf.fit(train_data, train_labels)
-test_pred = []
-for i in range(0, len(test_data)):
-    pred_act = lin_clf.predict(test_data[i].reshape(1, -1))
-    test_pred.append(pred_act[0])
+    test_data = []
+    test_labels = []
+    for key in train.keys():
+        act_hog = test[key]
+        for i in range(0, len(act_hog)):
+            test_labels.append(key)
+            test_data.append(act_hog[i])
 
-conf = confusion_matrix(test_labels, test_pred)
-class_names = list(train.keys())
-norm = conf / conf.astype(np.float).sum(axis=1, keepdims=True)
+    lin_clf = svm.LinearSVC()
+    lin_clf.fit(train_data, train_labels)
+    test_pred = []
+    for i in range(0, len(test_data)):
+        pred_act = lin_clf.predict(test_data[i].reshape(1, -1))
+        test_pred.append(pred_act[0])
+
+    conf = confusion_matrix(test_labels, test_pred)
+    class_names = list(train.keys())
+    norm = conf / conf.astype(np.float).sum(axis=1, keepdims=True)
+    # save_var('conf_m.npy', conf)
+    ACA = sum(np.diagonal(norm))
+
+    # Plot normalized confusion matrix
+    plt.figure()
+    plot_confusion_matrix(conf, classes=class_names, normalize=True,
+                          title='Normalized confusion matrix')
+    plt.show()
+    return ACA
 
 
 def plot_confusion_matrix(cm, classes,
@@ -58,21 +68,12 @@ def plot_confusion_matrix(cm, classes,
     tick_marks = np.arange(len(classes))
     plt.xticks(tick_marks, classes, rotation=90)
     plt.yticks(tick_marks, classes)
-    fmt = '.' if normalize else 'd'
+    # fmt = '.' if normalize else 'd'
     thresh = cm.max() / 2.
     for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
-        plt.text(j, i, format(cm[i, j], fmt),
+        plt.text(j, i, "",
                  horizontalalignment="center",
                  color="white" if cm[i, j] > thresh else "black")
     plt.tight_layout()
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
-
-
-# save_var('conf_m.npy', conf)
-ACA = sum(np.diagonal(norm))
-# Plot normalized confusion matrix
-plt.figure()
-plot_confusion_matrix(conf, classes=class_names, normalize=True,
-                      title='Normalized confusion matrix')
-plt.show()

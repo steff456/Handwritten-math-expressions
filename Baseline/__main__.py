@@ -3,22 +3,22 @@ import argparse
 from charge import get_images
 from hog import calculate_hog
 from charge import save_var
+from svm import classify
 
 parser = argparse.ArgumentParser(
     description='Baseline HOG')
 
 parser.add_argument('--train', type=str, default='./png',
-                    help='directory of the original inkml files')
-parser.add_argument('--index-txt', type=str, default='./training_index.txt',
-                    help='file with annotations')
+                    help='directory of the original png files')
 parser.add_argument('--num-im', type=int, default=5,
                     help='number of new images')
-parser.add_argument('--out-dir', type=str, default='./generatedSymbols',
+parser.add_argument('--out-dir', type=str, default='./HOG',
                     help='directory of the generated inkml files')
 
 args = parser.parse_args()
+
 # Charges the files to the workspace
-train_images, test_images = get_images()
+train_images, test_images = get_images(args.num_im, args.train)
 
 print('-------------- Start HOG --------------')
 # Calculates HOG Descriptor for train and test images
@@ -44,5 +44,8 @@ for key in test_images.keys():
             list_test.append(test_act)
     print('Finished test')
 
-save_var('HOG_train.npy', hog_train)
-save_var('HOG_test.npy', hog_test)
+save_var(args.out_dir + '/HOG_train.npy', hog_train)
+save_var(args.out_dir + '/HOG_test.npy', hog_test)
+
+ACA = classify(hog_train, hog_test)
+save_var(args.out_dir + '/ACA.npy', ACA)
