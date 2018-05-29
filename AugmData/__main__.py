@@ -16,7 +16,8 @@ coloredlogs.install(level='info')
 parser = argparse.ArgumentParser(
     description='Increase number of images')
 
-parser.add_argument('--directory', type=str, default='./trainingSymbols',
+parser.add_argument('--directory', type=str,
+                    default='/datadisks/disk1/galindojimenez/Data_Symbols/trainingSymbols',
                     help='directory of the original inkml files')
 parser.add_argument('--index-txt', type=str, default='./training_index.txt',
                     help='file with annotations')
