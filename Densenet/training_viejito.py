@@ -191,6 +191,7 @@ def train(epoch):
             labels = labels.cuda()
         optimizer.zero_grad()
         outputs = net(inputs)
+        outputs = F.log_softmax(outputs)
         loss = criterion(outputs, labels)
         loss.backward()
         optimizer.step()
@@ -252,6 +253,7 @@ def val(epoch, loader):
             labels = labels.cuda()
 
         outputs = net(inputs)
+        outputs = F.log_softmax(outputs)
         loss = criterion(outputs, labels)
         epoch_loss_stats.update(loss.data[0], inputs.size(0))
         _, predicted = torch.max(outputs.data, 1)
@@ -265,7 +267,8 @@ def test():
     print("Writing predictions")
     net.eval()
     labels = {}
-    files = glob.glob(osp.join(args.data, "{0}_128/label_00/*.jpg".format(args.eval)))
+    files = glob.glob(osp.join(args.data,
+                               "{0}_128/label_00/*.jpg".format(args.eval)))
     for file in tqdm(files):
         _id, _ = osp.splitext(osp.basename(file))
         img = Image.open(file)
