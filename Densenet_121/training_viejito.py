@@ -134,7 +134,7 @@ if args.val:
 if not osp.exists(args.save_folder):
     os.makedirs(args.save_folder)
 
-net = models.densenet121(pretrained=False, num_classes=102)
+net = models.densenet161(pretrained=False, num_classes=102)
 
 if osp.exists(args.snapshot):
     net.load_state_dict(torch.load(args.snapshot))
